@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>All Nighter Simulator — Zepto</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#0d0018;}
+#app{width:100%;height:100vh;position:relative;font-family:'Courier New',monospace;}
+
+/* ===== HOME SCREEN ===== */
+#homeScreen{
+  width:100%;height:100%;position:absolute;top:0;left:0;
+  background:#0d0018;display:flex;flex-direction:column;
+}
+.city-bg{position:absolute;inset:0;overflow:hidden;}
+.city-bg::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,#060010 0%,#0d0020 35%,#180030 65%,#0d0018 100%);
+}
+.city-canvas{position:absolute;bottom:0;left:0;width:100%;height:100%;}
+.home-ui{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:space-between;}
+
+/* TOP BAR */
+.top-bar{display:flex;justify-content:space-between;align-items:center;padding:18px 28px;}
+.zepto-logo{display:flex;align-items:center;gap:8px;}
+.zepto-logo .zl{color:#fff;font-size:27px;font-weight:900;letter-spacing:-1px;font-family:'Georgia',serif;}
+.zepto-logo .zl em{color:#A855F7;font-style:normal;}
+.z-dot{width:9px;height:9px;border-radius:50%;background:#D946EF;animation:zblink 1s infinite;}
+.exam-badge{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(139,47,201,0.15);
+  border:1px solid rgba(217,70,239,0.4);
+  border-radius:20px;padding:6px 16px;
+  color:#D946EF;font-size:11px;letter-spacing:2px;font-weight:700;
+}
+@keyframes zblink{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.3;transform:scale(0.7);}}
+
+/* HERO */
+.hero-section{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:0 20px;text-align:center;gap:10px;
+}
+.hero-eyebrow{
+  color:rgba(217,70,239,0.6);font-size:10px;letter-spacing:5px;font-weight:700;
+  text-transform:uppercase;
+}
+.hero-big{
+  font-size:clamp(30px,7.5vw,58px);font-weight:900;
+  color:#fff;letter-spacing:-2px;line-height:1.0;
+}
+.hero-big .accent{
+  color:#D946EF;
+  text-shadow:0 0 60px rgba(217,70,239,0.5),0 0 120px rgba(217,70,239,0.2);
+}
+.hero-tm{font-size:clamp(10px,2vw,16px);vertical-align:super;color:rgba(255,255,255,0.4);}
+.hero-sub{
+  color:rgba(255,255,255,0.35);font-size:clamp(10px,2.5vw,13px);
+  letter-spacing:4px;margin-top:2px;
+}
+.hero-pills{
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:10px;
+}
+.pill{
+  background:rgba(139,47,201,0.1);
+  border:1px solid rgba(139,47,201,0.3);
+  border-radius:20px;padding:6px 14px;
+  color:rgba(255,255,255,0.5);font-size:10px;letter-spacing:1px;
+  transition:all 0.2s;
+}
+.pill:hover{background:rgba(139,47,201,0.2);color:rgba(255,255,255,0.8);}
+
+/* BOTTOM PANEL */
+.bottom-panel{
+  margin:0 16px 16px 16px;
+  background:rgba(8,0,20,0.85);
+  border:1px solid rgba(139,47,201,0.3);
+  border-top:2px solid rgba(217,70,239,0.5);
+  border-radius:14px;padding:18px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  backdrop-filter:blur(8px);
+}
+.stat-item{text-align:center;flex:1;}
+.stat-label{color:rgba(255,255,255,0.3);font-size:9px;letter-spacing:2px;font-weight:700;margin-bottom:6px;}
+.stat-val{font-size:22px;font-weight:900;line-height:1;}
+.s-temp{color:#FF5252;}
+.s-sleep{color:#D946EF;}
+.s-syl{color:#A855F7;}
+.divider{width:1px;height:40px;background:rgba(139,47,201,0.2);}
+.mental-row{display:flex;gap:4px;margin-top:6px;justify-content:center;}
+.mental-row span{width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(139,47,201,0.25);transition:all 0.3s;}
+.mental-row span.filled{background:#D946EF;border-color:#D946EF;box-shadow:0 0 6px rgba(217,70,239,0.5);}
+
+.enter-btn{
+  background:linear-gradient(135deg,#7C3AED 0%,#A855F7 50%,#D946EF 100%);
+  color:#fff;border:none;
+  padding:16px 28px;border-radius:10px;
+  font-family:'Courier New',monospace;font-size:12px;font-weight:900;
+  letter-spacing:2px;cursor:pointer;white-space:nowrap;flex-shrink:0;
+  box-shadow:0 0 30px rgba(139,47,201,0.4),0 4px 15px rgba(0,0,0,0.3);
+  animation:pulse-purple 2s infinite;
+  transition:transform 0.15s;
+}
+@keyframes pulse-purple{
+  0%,100%{box-shadow:0 0 30px rgba(139,47,201,0.4),0 4px 15px rgba(0,0,0,0.3);}
+  50%{box-shadow:0 0 50px rgba(217,70,239,0.6),0 4px 25px rgba(0,0,0,0.3);}
+}
+.enter-btn:hover{transform:translateY(-2px);}
+.enter-btn:active{transform:translateY(0);}
+
+.footer-bar{display:flex;justify-content:space-between;padding:0 28px 14px;}
+.footer-txt{color:rgba(255,255,255,0.2);font-size:10px;letter-spacing:1.5px;}
+.footer-heart{color:#D946EF;}
+
+/* ===== INFO SCREEN ===== */
+#infoScreen{
+  width:100%;height:100%;position:absolute;top:0;left:0;
+  background:rgba(4,0,12,0.97);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  z-index:10;padding:20px;
+}
+.info-box{
+  background:rgba(8,0,20,0.99);
+  border:1px solid rgba(139,47,201,0.3);
+  border-top:2px solid rgba(217,70,239,0.6);
+  border-radius:16px;padding:40px 44px;
+  width:min(480px,100%);text-align:center;
+  box-shadow:0 0 60px rgba(139,47,201,0.15);
+}
+.info-logo{
+  color:rgba(217,70,239,0.5);font-size:12px;letter-spacing:4px;
+  margin-bottom:20px;text-transform:uppercase;
+}
+.info-title{color:#fff;font-size:20px;font-weight:900;letter-spacing:2px;margin-bottom:8px;}
+.info-sub{
+  color:rgba(255,255,255,0.3);font-size:11px;
+  letter-spacing:1px;margin-bottom:30px;line-height:1.9;
+}
+.info-field{margin-bottom:18px;text-align:left;}
+.info-field label{
+  display:block;color:rgba(168,85,247,0.6);
+  font-size:9px;letter-spacing:3px;margin-bottom:8px;text-transform:uppercase;
+}
+.info-field input{
+  width:100%;background:rgba(139,47,201,0.06);
+  border:1px solid rgba(139,47,201,0.2);
+  border-radius:8px;padding:13px 16px;
+  color:#fff;font-family:'Courier New',monospace;font-size:14px;outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.info-field input:focus{
+  border-color:#D946EF;
+  box-shadow:0 0 0 3px rgba(217,70,239,0.1);
+}
+.info-field input::placeholder{color:rgba(255,255,255,0.12);}
+.go-btn{
+  width:100%;
+  background:linear-gradient(135deg,#7C3AED,#D946EF);
+  color:#fff;border:none;
+  padding:15px;border-radius:10px;margin-top:8px;
+  font-family:'Courier New',monospace;font-size:13px;font-weight:900;
+  letter-spacing:2px;cursor:pointer;
+  box-shadow:0 4px 20px rgba(139,47,201,0.3);
+  transition:opacity 0.2s,transform 0.15s;
+}
+.go-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 25px rgba(139,47,201,0.4);}
+.go-btn:disabled{
+  background:rgba(139,47,201,0.08);
+  box-shadow:none;cursor:default;
+  color:rgba(255,255,255,0.15);
+}
+.info-skip{
+  color:rgba(255,255,255,0.18);font-size:11px;cursor:pointer;
+  margin-top:14px;display:block;letter-spacing:1px;
+  transition:color 0.2s;
+}
+.info-skip:hover{color:rgba(255,255,255,0.4);}
+
+/* ===== GAME SCREEN ===== */
+#gameScreen{width:100%;height:100%;position:absolute;top:0;left:0;background:#0d0018;display:none;}
+#cv{display:block;width:100%;height:100%;}
+#gameUI{position:absolute;top:0;left:0;width:100%;pointer-events:none;z-index:5;}
+
+.g-topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 16px;
+  background:rgba(4,0,12,0.6);
+  border-bottom:1px solid rgba(139,47,201,0.2);
+  backdrop-filter:blur(4px);
+}
+.g-stat{color:#fff;font-size:12px;font-weight:700;font-family:'Courier New',monospace;letter-spacing:1px;}
+.g-stat span{color:#D946EF;}
+#cgpa-box{
+  background:rgba(139,47,201,0.15);
+  border:1px solid rgba(139,47,201,0.45);
+  border-radius:6px;padding:4px 14px;
+  font-family:'Courier New',monospace;
+}
+#cgpa-val{color:#D946EF;font-weight:900;font-size:15px;}
+
+#energy-wrap{
+  position:absolute;top:44px;left:16px;right:16px;
+  height:4px;background:rgba(255,255,255,0.06);border-radius:2px;
+}
+#energy-bar{height:100%;border-radius:2px;background:#A855F7;transition:width 0.3s,background 0.5s;}
+#energy-lbl{position:absolute;top:52px;left:16px;color:rgba(255,255,255,0.25);font-size:9px;letter-spacing:2px;}
+
+#timer-badge{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#7C3AED,#D946EF);
+  color:#fff;font-family:'Courier New',monospace;font-size:10px;font-weight:900;
+  letter-spacing:1.5px;padding:4px 12px;border-radius:5px;
+  pointer-events:none;
+  box-shadow:0 2px 12px rgba(139,47,201,0.4);
+}
+
+/* ===== END OVERLAY ===== */
+#endOverlay{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  background:rgba(2,0,8,0.95);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  z-index:20;font-family:'Courier New',monospace;padding:20px;text-align:center;
+}
+.eo-logo{color:rgba(217,70,239,0.4);font-size:11px;letter-spacing:4px;margin-bottom:16px;}
+#end-title{
+  font-size:clamp(18px,4vw,24px);font-weight:900;letter-spacing:3px;
+  color:#fff;margin-bottom:6px;
+}
+#end-score{color:rgba(255,255,255,0.3);font-size:12px;margin-bottom:22px;letter-spacing:1px;}
+
+#reward-card{
+  background:rgba(8,0,20,0.9);
+  border:1px solid rgba(139,47,201,0.35);
+  border-top:2px solid rgba(217,70,239,0.6);
+  border-radius:14px;padding:28px 40px;margin-bottom:22px;
+  width:min(360px,100%);
+  box-shadow:0 0 40px rgba(139,47,201,0.15);
+}
+#rw-tier{font-size:10px;font-weight:900;color:rgba(168,85,247,0.7);margin-bottom:10px;letter-spacing:4px;}
+#rw-disc{
+  font-size:32px;font-weight:900;
+  color:#D946EF;margin-bottom:8px;
+  text-shadow:0 0 30px rgba(217,70,239,0.4);
+}
+#rw-extra{font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:1px;line-height:1.8;white-space:pre-line;}
+#rw-code{
+  display:inline-block;margin-top:12px;
+  background:rgba(139,47,201,0.12);
+  border:1px solid rgba(139,47,201,0.35);
+  border-radius:6px;padding:5px 16px;
+  font-size:14px;font-weight:900;color:#D946EF;letter-spacing:3px;
+}
+.share-nudge{
+  font-size:10px;color:rgba(255,255,255,0.15);
+  letter-spacing:1px;margin-bottom:18px;
+}
+.share-nudge span{color:rgba(217,70,239,0.5);}
+.end-btns{display:flex;gap:12px;}
+.end-btn{
+  padding:13px 28px;border-radius:9px;
+  font-family:'Courier New',monospace;font-size:12px;font-weight:900;
+  letter-spacing:2px;cursor:pointer;border:none;
+  transition:transform 0.15s,box-shadow 0.15s;
+}
+#retryBtn{
+  background:linear-gradient(135deg,#7C3AED,#D946EF);
+  color:#fff;
+  box-shadow:0 4px 16px rgba(139,47,201,0.35);
+}
+#retryBtn:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(139,47,201,0.5);}
+#homeBtn{
+  background:rgba(255,255,255,0.04);
+  color:rgba(255,255,255,0.35);
+  border:1px solid rgba(255,255,255,0.08);
+}
+#homeBtn:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);}
+
+/* ===== MINI LEADERBOARD ===== */
+#leaderboard{
+  position:absolute;top:68px;right:14px;
+  background:rgba(8,0,20,0.85);
+  border:1px solid rgba(139,47,201,0.25);
+  border-radius:10px;padding:10px 14px;
+  z-index:6;pointer-events:none;min-width:160px;
+  backdrop-filter:blur(4px);
+}
+.lb-title{
+  color:rgba(168,85,247,0.5);font-size:8px;
+  letter-spacing:3px;margin-bottom:8px;
+  font-family:'Courier New',monospace;text-transform:uppercase;
+}
+.lb-row{display:flex;justify-content:space-between;gap:10px;margin-bottom:4px;}
+.lb-clg{color:rgba(255,255,255,0.55);font-size:9px;font-family:'Courier New',monospace;}
+.lb-score{color:#D946EF;font-size:9px;font-weight:700;font-family:'Courier New',monospace;}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .top-bar{padding:14px 16px;}
+  .zepto-logo .zl{font-size:23px;}
+  .exam-badge{font-size:9px;padding:5px 11px;}
+  .hero-big{line-height:1.05;}
+  .bottom-panel{flex-direction:column;padding:14px 16px;gap:10px;}
+  .divider{display:none;}
+  .mobile-stats{display:flex;justify-content:space-around;width:100%;}
+  .stat-val{font-size:18px;}
+  .enter-btn{width:100%;padding:16px;font-size:13px;}
+  .footer-bar{padding:0 16px 10px;flex-direction:column;gap:2px;align-items:center;}
+  .info-box{padding:28px 22px;}
+  .info-field input{font-size:16px;}
+  .g-topbar{padding:8px 12px;}
+  .g-stat{font-size:10px;}
+  #cgpa-val{font-size:13px;}
+  #leaderboard{display:none;}
+  #reward-card{padding:20px 18px;}
+  #rw-disc{font-size:26px;}
+}
+@media(min-width:601px){.mobile-stats{display:contents;}.mobile-only{display:none;}}
+@media(max-width:600px){.desktop-stat{display:none;}.mobile-only{display:block;}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ============ HOME SCREEN ============ -->
+<div id="homeScreen">
+  <div class="city-bg"><canvas class="city-canvas" id="cityCanvas"></canvas></div>
+  <div class="home-ui">
+
+    <div class="top-bar">
+      <div class="zepto-logo">
+        <span class="zl">ze<em>pto</em></span>
+        <span class="z-dot"></span>
+      </div>
+      <div class="exam-badge">DU EXAM SEASON ⚡</div>
+    </div>
+
+    <div class="hero-section">
+      <div class="hero-eyebrow">India's 10-Minute App</div>
+      <div class="hero-big">
+        ALL NIGHTER<br>
+        <span class="accent">SIMULATOR<span class="hero-tm">™</span></span>
+      </div>
+      <div class="hero-sub">KAL PAPER HAI. AAJ SURVIVAL.</div>
+      <div class="hero-pills">
+        <span class="pill">🍜 Maggi in 10 mins</span>
+        <span class="pill">⚡ Red Bull delivered</span>
+        <span class="pill">📝 Highlighters, done</span>
+        <span class="pill">☕ Chai on demand</span>
+      </div>
+    </div>
+
+    <!-- BOTTOM STATS + CTA -->
+    <div class="bottom-panel">
+      <!-- DESKTOP -->
+      <div class="stat-item desktop-stat">
+        <div class="stat-label">TEMPERATURE</div>
+        <div class="stat-val s-temp">44°C</div>
+      </div>
+      <div class="divider desktop-stat"></div>
+      <div class="stat-item desktop-stat">
+        <div class="stat-label">SLEEP LEFT</div>
+        <div class="stat-val s-sleep">2%</div>
+      </div>
+      <div class="divider desktop-stat"></div>
+
+      <button class="enter-btn" onclick="showInfo()">PLAY &amp; EARN 60% OFF ▶</button>
+
+      <div class="divider desktop-stat"></div>
+      <div class="stat-item desktop-stat">
+        <div class="stat-label">SYLLABUS</div>
+        <div class="stat-val s-syl">74%</div>
+      </div>
+      <div class="divider desktop-stat"></div>
+      <div class="stat-item desktop-stat">
+        <div class="stat-label">MENTAL HEALTH</div>
+        <div class="mental-row" id="mentalDots">
+          <span class="filled"></span><span class="filled"></span>
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <!-- MOBILE -->
+      <div class="mobile-only" style="width:100%;">
+        <div class="mobile-stats">
+          <div class="stat-item"><div class="stat-label">TEMP</div><div class="stat-val s-temp">44°C</div></div>
+          <div class="stat-item"><div class="stat-label">SLEEP</div><div class="stat-val s-sleep">2%</div></div>
+          <div class="stat-item"><div class="stat-label">SYLLABUS</div><div class="stat-val s-syl">74%</div></div>
+        </div>
+        <div style="margin-top:14px;">
+          <button class="enter-btn" onclick="showInfo()" style="width:100%">PLAY &amp; EARN 60% OFF ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <span class="footer-txt">MADE FOR DU STUDENTS BY ZEPTO <span class="footer-heart">♥</span></span>
+      <span class="footer-txt">10 MIN RULE ⚡</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ INFO SCREEN ============ -->
+<div id="infoScreen">
+  <div class="info-box">
+    <div class="info-logo">— zepto —</div>
+    <div class="info-title">BEFORE YOU SURVIVE...</div>
+    <div class="info-sub">TELL US YOUR NEXT PAPER.<br>WE'LL FUEL THE ALL NIGHTER.</div>
+    <div class="info-field">
+      <label>Next Paper / Subject</label>
+      <input type="text" id="paperName" placeholder="e.g. Economics, Maths, History..." oninput="checkForm()">
+    </div>
+    <div class="info-field">
+      <label>Exam Date</label>
+      <input type="date" id="examDate" oninput="checkForm()" style="color-scheme:dark;">
+    </div>
+    <button class="go-btn" id="goBtn" onclick="launchGame()" disabled>START SURVIVAL RUN ▶</button>
+    <span class="info-skip" onclick="launchGame()">Skip — just let me play</span>
+  </div>
+</div>
+
+<!-- ============ GAME SCREEN ============ -->
+<div id="gameScreen">
+  <canvas id="cv"></canvas>
+  <div id="gameUI">
+    <div class="g-topbar">
+      <div class="g-stat">SCORE: <span id="sc">0</span></div>
+      <div id="timer-badge">⚡ 10 MIN RULE</div>
+      <div id="cgpa-box">CGPA: <span id="cgpa-val">7.00</span></div>
+    </div>
+    <div id="energy-wrap"><div id="energy-bar" style="width:100%"></div></div>
+    <div id="energy-lbl">MENTAL ENERGY</div>
+  </div>
+
+  <div id="leaderboard">
+    <div class="lb-title">All Nighter Board</div>
+    <div class="lb-row"><span class="lb-clg">🥇 SRCC</span><span class="lb-score">412</span></div>
+    <div class="lb-row"><span class="lb-clg">🥈 HINDU</span><span class="lb-score">358</span></div>
+    <div class="lb-row"><span class="lb-clg">🥉 RAMJAS</span><span class="lb-score">287</span></div>
+    <div class="lb-row" id="my-score-row" style="display:none">
+      <span class="lb-clg">⭐ YOU</span>
+      <span class="lb-score" id="my-lb-score">0</span>
+    </div>
+  </div>
+
+  <div id="endOverlay">
+    <div class="eo-logo">— zepto all nighter —</div>
+    <div id="end-title">SURVIVED THE NIGHT</div>
+    <div id="end-score"></div>
+    <div id="reward-card">
+      <div id="rw-tier"></div>
+      <div id="rw-disc"></div>
+      <div id="rw-extra"></div>
+      <div id="rw-code"></div>
+    </div>
+    <div class="share-nudge">SHARE YOUR SCORE → UNLOCK <span>₹10 ZEPTO CREDIT</span></div>
+    <div class="end-btns">
+      <button class="end-btn" id="retryBtn" onclick="startGame()">RETRY ↺</button>
+      <button class="end-btn" id="homeBtn" onclick="goHome()">HOME</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- #app -->
+
+<script>
+/* =========================================================
+   CITY BACKGROUND CANVAS (HOME SCREEN)
+========================================================= */
+(function(){
+  const cc = document.getElementById('cityCanvas');
+  let cw, ch;
+
+  function drawCity(){
+    cw = cc.width  = cc.parentElement.offsetWidth;
+    ch = cc.height = cc.parentElement.offsetHeight;
+    const ctx2 = cc.getContext('2d');
+    ctx2.clearRect(0,0,cw,ch);
+
+    const gnd = ch * 0.72;
+
+    /* ambient sky glow */
+    const aGlow = ctx2.createRadialGradient(cw*0.5, gnd, 0, cw*0.5, gnd, cw*0.6);
+    aGlow.addColorStop(0,'rgba(139,47,201,0.12)');
+    aGlow.addColorStop(1,'transparent');
+    ctx2.fillStyle = aGlow; ctx2.fillRect(0,0,cw,ch);
+
+    const blds = [
+      {x:.00,w:.06,h:.30},{x:.07,w:.04,h:.40},{x:.12,w:.07,h:.24},
+      {x:.20,w:.05,h:.34},{x:.26,w:.07,h:.26},{x:.34,w:.04,h:.20},
+      {x:.39,w:.07,h:.32},{x:.47,w:.05,h:.22},{x:.53,w:.07,h:.28},
+      {x:.61,w:.05,h:.22},{x:.67,w:.06,h:.35},{x:.74,w:.04,h:.25},
+      {x:.79,w:.06,h:.20},{x:.86,w:.05,h:.30},{x:.92,w:.04,h:.18},
+      {x:.97,w:.03,h:.26}
+    ];
+
+    blds.forEach(b => {
+      const bx=b.x*cw, bw=b.w*cw, bh=b.h*ch, by=gnd-bh;
+      ctx2.fillStyle = 'rgba(6,0,18,0.98)';
+      ctx2.fillRect(bx,by,bw,bh);
+      ctx2.strokeStyle = 'rgba(139,47,201,0.12)';
+      ctx2.lineWidth = 0.5;
+      ctx2.strokeRect(bx,by,bw,bh);
+      /* windows */
+      for(let wy=by+10;wy<gnd-10;wy+=14){
+        for(let wx=bx+5;wx<bx+bw-5;wx+=10){
+          if(Math.random()>.48){
+            const lit = Math.random()>.65;
+            ctx2.fillStyle = lit
+              ? (Math.random()>.5?'rgba(217,70,239,0.55)':'rgba(168,85,247,0.4)')
+              : 'rgba(60,20,100,0.08)';
+            ctx2.fillRect(wx,wy,5,8);
+          }
+        }
+      }
+      /* antenna */
+      if(Math.random()>.5){
+        ctx2.strokeStyle='rgba(139,47,201,0.35)';ctx2.lineWidth=1;
+        ctx2.beginPath();ctx2.moveTo(bx+bw/2,by);ctx2.lineTo(bx+bw/2,by-12);ctx2.stroke();
+        ctx2.fillStyle='rgba(217,70,239,0.7)';
+        ctx2.beginPath();ctx2.arc(bx+bw/2,by-14,2.5,0,Math.PI*2);ctx2.fill();
+      }
+    });
+
+    /* ground line with glow */
+    ctx2.strokeStyle = 'rgba(139,47,201,0.5)';ctx2.lineWidth=2;
+    ctx2.beginPath();ctx2.moveTo(0,gnd);ctx2.lineTo(cw,gnd);ctx2.stroke();
+    ctx2.strokeStyle = 'rgba(217,70,239,0.15)';ctx2.lineWidth=8;
+    ctx2.beginPath();ctx2.moveTo(0,gnd);ctx2.lineTo(cw,gnd);ctx2.stroke();
+  }
+
+  drawCity();
+  window.addEventListener('resize', drawCity);
+})();
+
+/* =========================================================
+   SCREEN TRANSITIONS
+========================================================= */
+function showInfo(){
+  document.getElementById('homeScreen').style.display='none';
+  document.getElementById('infoScreen').style.display='flex';
+}
+function checkForm(){
+  const p = document.getElementById('paperName').value.trim();
+  const d = document.getElementById('examDate').value;
+  document.getElementById('goBtn').disabled = !(p && d);
+}
+function goHome(){
+  document.getElementById('endOverlay').style.display='none';
+  document.getElementById('gameScreen').style.display='none';
+  document.getElementById('homeScreen').style.display='flex';
+}
+function launchGame(){
+  document.getElementById('infoScreen').style.display='none';
+  document.getElementById('gameScreen').style.display='block';
+  startGame();
+}
+
+/* =========================================================
+   GAME ENGINE
+========================================================= */
+const canvas = document.getElementById('cv');
+const ctx    = canvas.getContext('2d');
+let W, H, raf, gameRunning = false;
+let score, cgpa, energy, level, frame;
+let player, obstacles, particles;
+let jumpCount, maggiShield, shieldTimer, redBullActive, rbTimer;
+let bgStars = [], bgClouds = [];
+
+const GND = 0.73;
+
+function resize(){
+  const gs = document.getElementById('gameScreen');
+  W = canvas.width  = gs.offsetWidth;
+  H = canvas.height = gs.offsetHeight;
+}
+
+function initStars(){
+  bgStars = [];
+  for(let i=0;i<90;i++){
+    bgStars.push({
+      x: Math.random()*W,
+      y: Math.random()*H*0.6,
+      r: Math.random()*1.5+0.3,
+      tw: Math.random()*60,
+      purple: Math.random()>.55,
+      big: Math.random()>.88
+    });
+  }
+  bgClouds = [];
+  for(let i=0;i<4;i++){
+    bgClouds.push({x:Math.random()*W, y:H*0.08+Math.random()*H*0.18, spd:0.15+Math.random()*0.1, a:Math.random()*0.04+0.02});
+  }
+}
+
+function startGame(){
+  document.getElementById('endOverlay').style.display='none';
+  resize(); initStars();
+  gameRunning=true; score=0; cgpa=7.0; energy=100; level=1; frame=0;
+  obstacles=[]; particles=[];
+  jumpCount=0; maggiShield=false; shieldTimer=0; redBullActive=false; rbTimer=0;
+  const gnd = H*GND;
+  player = {x:W*0.13, y:gnd, w:34, h:46, vy:0, onGround:true};
+  document.getElementById('my-score-row').style.display='flex';
+  cancelAnimationFrame(raf);
+  loop();
+}
+
+/* ---------- OBSTACLES & POWERUPS ---------- */
+const OBSTACLES = [
+  {label:'BACKLOG',  emoji:'📚', color:'#5B21B6', w:30,h:54, cgpaHit:-0.15},
+  {label:'REELS',    emoji:'📱', color:'#4C1D95', w:22,h:38, cgpaHit:-0.10},
+  {label:'POWER CUT',emoji:'🔦', color:'#1E3A8A', w:28,h:44, cgpaHit:-0.12},
+  {label:'ATTENDANCE',emoji:'👻',color:'#6B21A8', w:26,h:50, cgpaHit:-0.18},
+  {label:'VIVA',     emoji:'😰', color:'#831843', w:26,h:60, cgpaHit:-0.22},
+  {label:'PROXY',    emoji:'🫠', color:'#3730A3', w:24,h:44, cgpaHit:-0.10},
+  {label:'GROUP PROJECT',emoji:'😤',color:'#7C2D12',w:32,h:48,cgpaHit:-0.14},
+];
+const POWERUPS = [
+  {label:'MAGGI',       color:'#D946EF', w:28,h:28, type:'maggi',   emoji:'🍜'},
+  {label:'RED BULL',    color:'#7C3AED', w:26,h:26, type:'redbull', emoji:'⚡'},
+  {label:'HIGHLIGHTER', color:'#A855F7', w:26,h:26, type:'cgpa',    emoji:'🖊️'},
+  {label:'CHAI',        color:'#D97706', w:26,h:26, type:'energy',  emoji:'☕'},
+  {label:'STICKY NOTE', color:'#EC4899', w:26,h:26, type:'double',  emoji:'📝'},
+];
+
+function spawnObs(){
+  const t = OBSTACLES[Math.floor(Math.random()*OBSTACLES.length)];
+  const gnd = H*GND;
+  const multi = Math.random()<0.18 && level>2;
+  obstacles.push({...t, x:W+20, y:gnd-t.h+3, isPow:false, wobble:Math.random()*100});
+  if(multi){
+    const t2 = OBSTACLES[Math.floor(Math.random()*OBSTACLES.length)];
+    obstacles.push({...t2, x:W+80, y:gnd-t2.h+3, isPow:false, wobble:Math.random()*100});
+  }
+}
+function spawnPow(){
+  const t = POWERUPS[Math.floor(Math.random()*POWERUPS.length)];
+  const gnd = H*GND;
+  obstacles.push({...t, x:W+20, y:gnd-t.h-55-Math.random()*55, isPow:true, wobble:Math.random()*100});
+}
+
+/* ---------- JUMP ---------- */
+function jump(){
+  if(!gameRunning) return;
+  const boost = redBullActive ? 1.15 : 1;
+  if(player.onGround){
+    player.vy = -15.5*boost; player.onGround=false; jumpCount=1;
+  } else if(jumpCount<2){
+    player.vy = -12.5*boost; jumpCount=2;
+  }
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.code==='Space'){e.preventDefault();jump();}
+});
+document.getElementById('gameScreen').addEventListener('touchstart', e=>{
+  if(e.target.closest('#endOverlay')) return;
+  e.preventDefault(); jump();
+},{passive:false});
+document.getElementById('gameScreen').addEventListener('click', e=>{
+  if(e.target.closest('#endOverlay')) return; jump();
+});
+
+/* ---------- HUD ---------- */
+function updateHUD(){
+  document.getElementById('sc').textContent = score;
+  document.getElementById('cgpa-val').textContent = Math.max(0,cgpa).toFixed(2);
+  document.getElementById('my-lb-score').textContent = score;
+  const ep = Math.max(0,energy);
+  document.getElementById('energy-bar').style.width = ep+'%';
+  document.getElementById('energy-bar').style.background =
+    ep>60 ? '#A855F7' : ep>30 ? '#D946EF' : '#FF5252';
+  const cv2 = document.getElementById('cgpa-val');
+  cv2.style.color = cgpa>=7 ? '#D946EF' : cgpa>=5 ? '#F59E0B' : '#FF5252';
+}
+
+/* ---------- PARTICLES ---------- */
+function addParticles(x,y,color,n){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=Math.random()*5+1;
+    particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2.5,life:45,color,isTxt:false});
+  }
+}
+function showFloaty(x,y,txt,color){
+  particles.push({x,y,vx:0,vy:-1.8,life:80,color,txt,isTxt:true});
+}
+
+/* ---------- DRAW BACKGROUND ---------- */
+function drawBg(){
+  const gnd = H*GND;
+
+  /* sky gradient */
+  const sky = ctx.createLinearGradient(0,0,0,gnd);
+  sky.addColorStop(0,'#030008');
+  sky.addColorStop(0.4,'#0a0018');
+  sky.addColorStop(0.75,'#160030');
+  sky.addColorStop(1,'#1e003d');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,gnd);
+
+  /* cloud wisps */
+  bgClouds.forEach(c=>{
+    c.x -= c.spd;
+    if(c.x < -200) c.x = W+200;
+    ctx.save();
+    ctx.globalAlpha = c.a;
+    ctx.fillStyle='#A855F7';
+    ctx.beginPath();ctx.ellipse(c.x,c.y,80,18,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  });
+
+  /* stars */
+  bgStars.forEach(s=>{
+    const t = 0.5+0.5*Math.sin((frame+s.tw)/22);
+    ctx.globalAlpha = t*(s.big?0.9:0.5);
+    ctx.fillStyle = s.purple ? '#D946EF' : '#fff';
+    if(s.big){
+      /* 4-point star */
+      ctx.save();
+      ctx.translate(s.x,s.y);
+      ctx.beginPath();
+      for(let i=0;i<8;i++){
+        const a=i*Math.PI/4, r=i%2===0?3:1.2;
+        i===0?ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r):ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
+      }
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+    } else {
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+    }
+  });
+  ctx.globalAlpha=1;
+
+  /* moon */
+  const mx=W*0.83, my=H*0.10;
+  /* outer halo */
+  const moonH=ctx.createRadialGradient(mx,my,0,mx,my,65);
+  moonH.addColorStop(0,'rgba(217,70,239,0.12)');
+  moonH.addColorStop(0.6,'rgba(168,85,247,0.04)');
+  moonH.addColorStop(1,'transparent');
+  ctx.fillStyle=moonH; ctx.beginPath();ctx.arc(mx,my,65,0,Math.PI*2);ctx.fill();
+  /* moon body */
+  ctx.fillStyle='#ede0ff'; ctx.beginPath();ctx.arc(mx,my,19,0,Math.PI*2);ctx.fill();
+  /* crater shadow */
+  ctx.fillStyle='#0d0020'; ctx.beginPath();ctx.arc(mx-7,my-5,14.5,0,Math.PI*2);ctx.fill();
+  /* moon edge glow */
+  ctx.strokeStyle='rgba(217,70,239,0.3)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(mx,my,20,0,Math.PI*2);ctx.stroke();
+
+  /* city buildings */
+  const blds=[
+    {x:.00,w:.06,h:.27},{x:.07,w:.04,h:.36},{x:.12,w:.07,h:.21},
+    {x:.20,w:.05,h:.31},{x:.26,w:.07,h:.23},{x:.34,w:.04,h:.17},
+    {x:.39,w:.07,h:.29},{x:.47,w:.05,h:.21},{x:.53,w:.07,h:.25},
+    {x:.61,w:.05,h:.19},{x:.67,w:.06,h:.32},{x:.74,w:.04,h:.22},
+    {x:.79,w:.06,h:.17},{x:.86,w:.05,h:.28},{x:.92,w:.04,h:.15},
+    {x:.97,w:.03,h:.24}
+  ];
+  blds.forEach(b=>{
+    const bx=b.x*W,bw=b.w*W,bh=b.h*H,by=gnd-bh;
+    ctx.fillStyle='rgba(4,0,14,0.99)'; ctx.fillRect(bx,by,bw,bh);
+    ctx.strokeStyle='rgba(139,47,201,0.1)'; ctx.lineWidth=0.5; ctx.strokeRect(bx,by,bw,bh);
+    for(let wy=by+8;wy<gnd-8;wy+=13){
+      for(let wx=bx+4;wx<bx+bw-4;wx+=9){
+        if(Math.random()>.54){
+          ctx.fillStyle=Math.random()>.68
+            ?'rgba(217,70,239,0.55)'
+            :'rgba(168,85,247,0.12)';
+          ctx.fillRect(wx,wy,4,7);
+        }
+      }
+    }
+  });
+
+  /* road */
+  ctx.fillStyle='#060012'; ctx.fillRect(0,gnd,W,H-gnd);
+  /* road glow */
+  const rGlow=ctx.createLinearGradient(0,gnd,0,gnd+40);
+  rGlow.addColorStop(0,'rgba(139,47,201,0.25)');
+  rGlow.addColorStop(1,'transparent');
+  ctx.fillStyle=rGlow; ctx.fillRect(0,gnd,W,40);
+  /* road line */
+  ctx.strokeStyle='rgba(139,47,201,0.6)'; ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(0,gnd);ctx.lineTo(W,gnd);ctx.stroke();
+  /* dashes */
+  ctx.strokeStyle='rgba(168,85,247,0.15)'; ctx.lineWidth=1; ctx.setLineDash([22,15]);
+  ctx.beginPath();ctx.moveTo(0,gnd+(H-gnd)*0.5);ctx.lineTo(W,gnd+(H-gnd)*0.5);ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* zepto scooter */
+  const sx=((frame*0.85)%(W+100))-50;
+  ctx.save();
+  ctx.font='18px serif'; ctx.fillText('🛵',sx,gnd-7);
+  /* purple trail */
+  for(let i=1;i<=5;i++){
+    ctx.globalAlpha=0.12-i*0.02;
+    ctx.fillStyle='#D946EF';
+    ctx.fillRect(sx-i*14,gnd-12,10,5);
+  }
+  ctx.restore();
+}
+
+/* ---------- DRAW PLAYER ---------- */
+function drawPlayer(){
+  const p=player;
+  const sc2=W<400?0.85:1;
+  ctx.save();
+  ctx.translate(p.x,p.y); ctx.scale(sc2,sc2); ctx.translate(-p.x,-p.y);
+
+  const legSwing = p.onGround ? Math.sin(frame*0.32)*9 : 0;
+  const py = p.y-p.h;
+
+  /* shadow */
+  ctx.globalAlpha=0.2;
+  ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(p.x,p.y+3,14,5,0,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+
+  /* legs */
+  ctx.fillStyle='#1e0040';
+  ctx.fillRect(p.x-9, p.y-12, 7, 14+legSwing);
+  ctx.fillRect(p.x+2, p.y-12, 7, 14-legSwing);
+  /* shoes */
+  ctx.fillStyle='#0d001a';
+  ctx.fillRect(p.x-10,p.y+1,9,5);
+  ctx.fillRect(p.x+2,p.y+1,9,5);
+
+  /* body — zepto purple jacket */
+  ctx.fillStyle='#6D28D9';
+  ctx.fillRect(p.x-12,py+18,24,p.h-28);
+  /* jacket stripe */
+  ctx.fillStyle='rgba(217,70,239,0.3)';
+  ctx.fillRect(p.x-12,py+18,24,4);
+  /* zepto text on jacket */
+  ctx.fillStyle='#D946EF';
+  ctx.font='bold 6.5px Courier New'; ctx.textAlign='center';
+  ctx.fillText('zepto',p.x,py+29);
+  ctx.font='9px serif';
+  ctx.fillText('⚡',p.x,py+40);
+
+  /* arms */
+  ctx.fillStyle='#6D28D9';
+  ctx.fillRect(p.x-18,py+20,7,17);
+  ctx.fillRect(p.x+11,py+20,7,17);
+
+  /* delivery bag */
+  ctx.fillStyle='#8B2FC9';
+  ctx.fillRect(p.x+11,py+13,15,19);
+  ctx.strokeStyle='rgba(217,70,239,0.4)'; ctx.lineWidth=1;
+  ctx.strokeRect(p.x+11,py+13,15,19);
+  ctx.fillStyle='#D946EF';
+  ctx.font='bold 7px Courier New'; ctx.textAlign='center';
+  ctx.fillText('Z',p.x+18,py+25);
+
+  /* head */
+  ctx.fillStyle='#c4956a'; ctx.fillRect(p.x-8,py,16,18);
+
+  /* helmet */
+  ctx.fillStyle='#5B21B6';
+  ctx.fillRect(p.x-10,py-2,20,10);
+  ctx.beginPath();ctx.arc(p.x,py+2,12.5,Math.PI,0);ctx.fill();
+  /* helmet highlight */
+  ctx.fillStyle='rgba(168,85,247,0.3)';
+  ctx.fillRect(p.x-9,py-1,9,5);
+  /* visor */
+  ctx.fillStyle='rgba(139,47,201,0.65)'; ctx.fillRect(p.x-8,py+3,16,7);
+  ctx.strokeStyle='rgba(217,70,239,0.5)'; ctx.lineWidth=0.5;
+  ctx.strokeRect(p.x-8,py+3,16,7);
+  /* helmet stripe */
+  ctx.fillStyle='#D946EF'; ctx.fillRect(p.x-10,py-2,20,2.5);
+
+  /* maggi shield */
+  if(maggiShield){
+    const pulse=0.5+0.5*Math.sin(frame*0.15);
+    ctx.globalAlpha=0.25+pulse*0.1;
+    ctx.strokeStyle='#D946EF'; ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.arc(p.x,p.y-p.h/2,34,0,Math.PI*2);ctx.stroke();
+    ctx.globalAlpha=0.05+pulse*0.03;
+    ctx.fillStyle='#D946EF';
+    ctx.beginPath();ctx.arc(p.x,p.y-p.h/2,34,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+  }
+  /* red bull glow + speed lines */
+  if(redBullActive){
+    ctx.globalAlpha=0.2;
+    ctx.strokeStyle='#A855F7'; ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(p.x,p.y-p.h/2,38,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle='#D946EF'; ctx.lineWidth=1;
+    for(let i=0;i<4;i++){
+      ctx.globalAlpha=0.12-i*0.02;
+      ctx.beginPath();
+      ctx.moveTo(p.x-22-i*9, p.y-p.h/2-8+i*8);
+      ctx.lineTo(p.x-38-i*9, p.y-p.h/2-8+i*8);
+      ctx.stroke();
+    }
+    ctx.globalAlpha=1;
+  }
+  ctx.restore();
+}
+
+/* ---------- DRAW OBSTACLE ---------- */
+function drawObs(o){
+  ctx.save();
+  if(o.isPow){
+    const pulse=0.6+0.4*Math.sin((frame+o.wobble)*0.15);
+    /* glow */
+    const grd=ctx.createRadialGradient(o.x+o.w/2,o.y+o.h/2,1,o.x+o.w/2,o.y+o.h/2,o.w*1.2);
+    grd.addColorStop(0,o.color+'55'); grd.addColorStop(1,'transparent');
+    ctx.fillStyle=grd; ctx.beginPath();ctx.arc(o.x+o.w/2,o.y+o.h/2,o.w*1.2,0,Math.PI*2);ctx.fill();
+    /* ring */
+    ctx.globalAlpha=pulse;
+    ctx.strokeStyle=o.color; ctx.lineWidth=2;
+    ctx.fillStyle=o.color+'18';
+    ctx.beginPath();ctx.arc(o.x+o.w/2,o.y+o.h/2,o.w/2+5,0,Math.PI*2);
+    ctx.fill(); ctx.stroke();
+    ctx.globalAlpha=1;
+    /* emoji */
+    ctx.font='17px serif'; ctx.textAlign='center';
+    ctx.fillText(o.emoji, o.x+o.w/2, o.y+o.h/2+6);
+    /* label */
+    ctx.fillStyle='rgba(217,70,239,0.85)'; ctx.font='bold 7px Courier New';
+    ctx.fillText(o.label, o.x+o.w/2, o.y-9);
+  } else {
+    /* shadow */
+    ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fillRect(o.x+3,o.y+5,o.w,o.h);
+    /* body */
+    ctx.fillStyle=o.color; ctx.fillRect(o.x,o.y,o.w,o.h);
+    /* shimmer top */
+    ctx.fillStyle='rgba(217,70,239,0.25)'; ctx.fillRect(o.x,o.y,o.w,7);
+    /* border */
+    ctx.strokeStyle='rgba(217,70,239,0.35)'; ctx.lineWidth=1;
+    ctx.strokeRect(o.x,o.y,o.w,o.h);
+    /* label */
+    ctx.fillStyle='rgba(255,255,255,0.92)'; ctx.font='bold 7.5px Courier New'; ctx.textAlign='center';
+    ctx.fillText(o.label, o.x+o.w/2, o.y-7);
+    /* emoji */
+    ctx.font='14px serif';
+    ctx.fillText(o.emoji, o.x+o.w/2, o.y+o.h/2+6);
+  }
+  ctx.restore();
+}
+
+/* ---------- COLLISION ---------- */
+function collides(o){
+  const px=player.x-10, pw=20, py_=player.y-player.h, ph=player.h;
+  const ox=o.x+3, ow=o.w-6;
+  return ox<px+pw && ox+ow>px && o.y<py_+ph-5 && o.y+o.h>py_+5;
+}
+
+/* ---------- END GAME ---------- */
+function endGame(){
+  gameRunning=false; cancelAnimationFrame(raf);
+  document.getElementById('end-score').textContent =
+    'SCORE: '+score+' | CGPA: '+Math.max(0,cgpa).toFixed(2);
+  let tier,disc,extra,code;
+  if(score>=700){
+    tier='DU KA LEGEND 🏆';disc='60% OFF';
+    extra='Free delivery on next order\nYou survived better than your syllabus';
+    code='ZLEG60';
+  } else if(score>=400){
+    tier='CERTIFIED SURVIVOR ✅';disc='40% OFF';
+    extra='Maggi delivered, exam almost cleared\nYou deserve this biryani';
+    code='ZSURV40';
+  } else if(score>=200){
+    tier='JUGAADU SCHOLAR 📚';disc='25% OFF';
+    extra='Backlog pending. Discount confirmed.';
+    code='ZJUGAAD25';
+  } else {
+    tier='FIRST YEAR SPIRIT 💜';disc='15% OFF';
+    extra='Syllabus still loading... try again!';
+    code='ZFRESH15';
+  }
+  document.getElementById('rw-tier').textContent  = tier;
+  document.getElementById('rw-disc').textContent  = disc;
+  document.getElementById('rw-extra').textContent = extra;
+  document.getElementById('rw-code').textContent  = code;
+  document.getElementById('endOverlay').style.display='flex';
+}
+
+/* ---------- MAIN LOOP ---------- */
+function loop(){
+  if(!gameRunning) return;
+  raf = requestAnimationFrame(loop);
+  ctx.clearRect(0,0,W,H);
+  drawBg();
+  frame++;
+
+  const gnd = H*GND;
+  const spd = (redBullActive?1.45:1) * (5 + (level-1)*0.5);
+
+  /* physics */
+  player.vy += 0.76; player.y += player.vy;
+  if(player.y >= gnd){ player.y=gnd; player.vy=0; player.onGround=true; jumpCount=0; }
+
+  /* spawning */
+  const obsRate = 0.014 + (level-1)*0.003;
+  if(Math.random()<obsRate) spawnObs();
+  if(Math.random()<0.007)  spawnPow();
+
+  /* update + collide */
+  for(let i=obstacles.length-1;i>=0;i--){
+    const o=obstacles[i];
+    o.x -= spd;
+    if(o.x+o.w < -50){ obstacles.splice(i,1); if(!o.isPow) score+=10; continue; }
+    if(collides(o)){
+      if(o.isPow){
+        obstacles.splice(i,1); score+=30;
+        if(o.type==='maggi'){
+          maggiShield=true; shieldTimer=230;
+          showFloaty(o.x,o.y,'MAGGI SHIELD! 🍜','#D946EF');
+          addParticles(o.x,o.y,'#D946EF',16);
+        } else if(o.type==='redbull'){
+          redBullActive=true; rbTimer=260;
+          energy=Math.min(100,energy+28);
+          showFloaty(o.x,o.y,'RED BULL! ⚡','#A855F7');
+          addParticles(o.x,o.y,'#8B2FC9',16);
+        } else if(o.type==='cgpa'){
+          cgpa=Math.min(10,cgpa+0.35);
+          showFloaty(o.x,o.y,'CGPA +0.35! 🖊️','#A855F7');
+          addParticles(o.x,o.y,'#A855F7',14);
+        } else if(o.type==='energy'){
+          energy=Math.min(100,energy+48);
+          showFloaty(o.x,o.y,'CHAI BOOST! ☕','#F59E0B');
+          addParticles(o.x,o.y,'#F59E0B',14);
+        } else if(o.type==='double'){
+          jumpCount=0;
+          showFloaty(o.x,o.y,'DOUBLE JUMP! 📝','#EC4899');
+          addParticles(o.x,o.y,'#EC4899',14);
+        }
+      } else {
+        if(maggiShield){
+          obstacles.splice(i,1); maggiShield=false; shieldTimer=0;
+          showFloaty(player.x,player.y-player.h,'BLOCKED! 🍜','#D946EF');
+          addParticles(player.x,player.y,'#D946EF',24);
+        } else {
+          obstacles.splice(i,1);
+          cgpa   = Math.max(0,cgpa+o.cgpaHit);
+          energy = Math.max(0,energy-18);
+          showFloaty(player.x,player.y-player.h,'CGPA '+o.cgpaHit.toFixed(2),'#FF5252');
+          addParticles(player.x,player.y-player.h/2,'#FF5252',20);
+          if(energy<=0){ endGame(); return; }
+        }
+      }
+    }
+  }
+
+  /* timers */
+  if(shieldTimer>0){ shieldTimer--; if(shieldTimer===0) maggiShield=false; }
+  if(rbTimer>0)    { rbTimer--;     if(rbTimer===0)     redBullActive=false; }
+
+  /* passive drain */
+  energy = Math.max(0, energy-0.028);
+  if(energy<=0){ endGame(); return; }
+  score++;
+  if(score>0 && score%500===0) level++;
+
+  /* draw everything */
+  obstacles.forEach(o=>drawObs(o));
+  drawPlayer();
+
+  /* particles */
+  ctx.save();
+  for(let i=particles.length-1;i>=0;i--){
+    const p2=particles[i];
+    p2.x+=p2.vx; p2.y+=p2.vy; p2.life--;
+    if(p2.isTxt){
+      ctx.globalAlpha=Math.min(1,p2.life/50);
+      ctx.fillStyle=p2.color;
+      ctx.font='bold 12px Courier New'; ctx.textAlign='center';
+      ctx.fillText(p2.txt,p2.x,p2.y);
+    } else {
+      ctx.globalAlpha=p2.life/42;
+      ctx.fillStyle=p2.color;
+      ctx.fillRect(p2.x-2,p2.y-2,4,4);
+    }
+    if(p2.life<=0) particles.splice(i,1);
+  }
+  ctx.globalAlpha=1;
+  ctx.restore();
+
+  /* red bull screen tint */
+  if(redBullActive){
+    ctx.save();
+    ctx.globalAlpha=0.04;
+    ctx.fillStyle='#7C3AED';
+    ctx.fillRect(0,0,W,H);
+    ctx.restore();
+  }
+
+  updateHUD();
+}
+
+window.addEventListener('resize',()=>{ if(gameRunning) resize(); });
+
+/* HOME SCREEN MENTAL DOTS ANIMATION */
+window.addEventListener('DOMContentLoaded',()=>{
+  const dots=document.querySelectorAll('#mentalDots span');
+  let di=0;
+  setInterval(()=>{
+    dots.forEach((d,i)=>d.classList.toggle('filled',i<=di));
+    di=(di+1)%5;
+  },750);
+});
+</script>
+</body>
+</html>
